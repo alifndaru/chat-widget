@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chat Widget - Tailwind CSS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .test-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>Test Chat Widget dengan Tailwind CSS</h1>
+        <p><strong>Status:</strong> Widget harus muncul di pojok kanan bawah dengan styling Tailwind yang lengkap.</p>
+        <p><strong>Expected:</strong> Button floating chat dengan styling yang benar (flex, items-center, rounded, dll)</p>
+    </div>
+
+    <!-- 1. Load Widget Script -->
+    <script src="./dist/chat-widget.iife.js" crossorigin="anonymous"></script>
+    
+    <!-- 2. Initialize Widget -->
+    <script>
+        window.initChatWidget({
+            apiUrl: 'https://dkms.bnpb.go.id/ai/api/cms-backend/api/v1',
+            language: 'id',
+            theme: 'light'
+        });
+        
+        console.log('✅ Chat Widget initialized');
+        console.log('Check if Tailwind CSS classes are applied in the widget');
+    </script>
+</body>
+</html>

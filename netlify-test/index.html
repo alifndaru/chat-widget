@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BNPB Chat Widget - Test Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin-bottom: 30px;
+    }
+    
+    .header h1 {
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 1.2em;
+    }
+    
+    .content {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      margin-bottom: 30px;
+    }
+    
+    .content h2 {
+      color: #667eea;
+      margin-bottom: 20px;
+    }
+    
+    .content p {
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 15px;
+    }
+
+    .alert {
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-left: 5px solid;
+    }
+
+    .alert-error {
+      background: #fee;
+      border-color: #ef4444;
+      color: #7f1d1d;
+    }
+
+    .alert-warning {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .alert-info {
+      background: #dbeafe;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .alert-success {
+      background: #d1fae5;
+      border-color: #10b981;
+      color: #065f46;
+    }
+
+    .alert h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.3em;
+    }
+
+    .url-input {
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .url-input label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .url-input input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #667eea;
+      border-radius: 5px;
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+
+    .button {
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: bold;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      transition: background 0.2s;
+    }
+
+    .button:hover {
+      background: #5568d3;
+    }
+
+    .button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .button-danger {
+      background: #ef4444;
+    }
+
+    .button-danger:hover {
+      background: #dc2626;
+    }
+
+    .button-secondary {
+      background: #6b7280;
+    }
+
+    .button-secondary:hover {
+      background: #4b5563;
+    }
+
+    .button-success {
+      background: #10b981;
+    }
+
+    .button-success:hover {
+      background: #059669;
+    }
+    
+    .status {
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .status-label {
+      font-weight: bold;
+      margin-right: 10px;
+      color: #333;
+      min-width: 120px;
+    }
+    
+    .status-value {
+      color: #667eea;
+      word-break: break-all;
+      flex: 1;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    
+    .badge-success {
+      background: #10b981;
+      color: white;
+    }
+    
+    .badge-error {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .badge-pending {
+      background: #f59e0b;
+      color: white;
+    }
+
+    code {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .console-output {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+
+    .console-output pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .steps {
+      background: #f8fafc;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    .steps ol {
+      margin-left: 20px;
+      line-height: 2;
+    }
+
+    .steps li {
+      margin-bottom: 10px;
+    }
+
+    .steps li strong {
+      color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧪 BNPB Chat Widget - Test Page</h1>
+      <p>Testing widget deployment</p>
+    </div>
+
+    <!-- LOCALTUNNEL SUCCESS -->
+    <div class="content">
+      <div class="alert alert-info">
+        <h3>ℹ️ LocalTunnel Setup - COMPLETE!</h3>
+        <p><strong>Command yang dijalankan:</strong></p>
+        <p style="margin-top: 10px;"><code>lt --port 6184</code></p>
+        
+        <p style="margin-top: 15px;"><strong>Tunnel URL:</strong></p>
+        <p style="margin-top: 5px;"><code>https://cold-gifts-boil.loca.lt</code></p>
+        
+        <p style="margin-top: 15px;"><strong>Status Check:</strong></p>
+        <ul style="margin-left: 20px; margin-top: 5px;">
+          <li>✅ Content-Type: application/javascript</li>
+          <li>✅ CORS headers: Present</li>
+          <li>✅ File size: 7.7 MB (2.9 MB gzipped)</li>
+          <li>✅ HTTP Status: 200 OK</li>
+        </ul>
+        
+        <p style="margin-top: 15px;"><strong>Next:</strong> Deploy test page ini ke Netlify untuk test cross-origin loading!</p>
+      </div>
+
+      <div class="alert alert-success">
+        <h3>✅ LOCALTUNNEL ACTIVE!</h3>
+        
+        <p><strong>Your widget is now accessible via:</strong></p>
+        <p style="margin-top: 10px;"><code>https://cold-gifts-boil.loca.lt/chat-widget.iife.js</code></p>
+        
+        <p style="margin-top: 15px;"><strong>✅ LocalTunnel Benefits:</strong></p>
+        <ul style="margin-left: 20px; margin-top: 5px;">
+          <li>FREE - No payment required</li>
+          <li>No warning page (unlike Ngrok free tier)</li>
+          <li>Returns proper JavaScript MIME type</li>
+          <li>Works perfect dengan widget loading</li>
+        </ul>
+        
+        <p style="margin-top: 15px;"><strong>Ready to test:</strong></p>
+        <ol style="margin-left: 20px; margin-top: 5px;">
+          <li>Click "Load Widget" button below</li>
+          <li>Widget akan muncul di pojok kanan bawah</li>
+          <li>Test chat functionality</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Alternative: Test dengan localhost langsung -->
+    <div class="content">
+      <h2>🔧 Alternative: Test di Localhost</h2>
+      
+      <div class="alert alert-info">
+        <p><strong>Jika Anda ingin test SEKARANG tanpa deploy:</strong></p>
+        <div class="steps">
+          <ol>
+            <li>Pastikan Docker running: <code>make docker-up</code></li>
+            <li>Buka file ini di browser: <code>file:///path/to/this/file.html</code></li>
+            <li>ATAU serve folder ini: <code>python3 -m http.server 8080</code></li>
+            <li>Gunakan URL: <code>http://localhost:6184/chat-widget.iife.js</code></li>
+            <li>Widget akan load langsung tanpa masalah</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="url-input">
+        <label for="widget-url">🔗 Widget URL:</label>
+        <input 
+          type="text" 
+          id="widget-url" 
+          placeholder="https://cold-gifts-boil.loca.lt/chat-widget.iife.js"
+          value="https://cold-gifts-boil.loca.lt/chat-widget.iife.js"
+        >
+        <button class="button" onclick="loadWidget()">Load Widget</button>
+        <button class="button button-danger" onclick="destroyWidget()">Destroy Widget</button>
+        <button class="button button-secondary" onclick="clearLogs()">Clear Logs</button>
+      </div>
+      
+      <div class="status">
+        <h3 style="margin-bottom: 15px;">📊 Widget Status</h3>
+        <div class="status-item">
+          <span class="status-label">Status:</span>
+          <span class="status-value" id="widget-status">
+            <span class="badge badge-pending">Not Loaded</span>
+          </span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Version:</span>
+          <span class="status-value" id="widget-version">-</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Load Time:</span>
+          <span class="status-value" id="load-time">-</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Widget URL:</span>
+          <span class="status-value" id="current-widget-url">-</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">API URL:</span>
+          <span class="status-value" id="api-url">https://dkms.bnpb.go.id/ai/api/cms-backend/api/v1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Console Output -->
+    <div class="content">
+      <h2>🔍 Console Output</h2>
+      <p>Real-time logs from widget initialization:</p>
+      <div class="console-output">
+        <pre id="console-output">Waiting for widget to load...</pre>
+      </div>
+    </div>
+
+    <!-- Production Deployment Guide -->
+    <div class="content">
+      <h2>🚀 Production Deployment Checklist</h2>
+      
+      <div class="alert alert-info">
+        <p><strong>Untuk production deployment, widget ini sudah siap!</strong></p>
+        
+        <div class="steps">
+          <h4 style="margin-top: 15px; margin-bottom: 10px;">Steps:</h4>
+          <ol>
+            <li><strong>Deploy Docker ke server:</strong>
+              <ul style="margin-left: 20px; margin-top: 5px;">
+                <li>VPS (DigitalOcean, Linode, AWS EC2, etc.)</li>
+                <li>Cloud Run (GCP)</li>
+                <li>ECS (AWS)</li>
+                <li>Azure Container Instances</li>
+              </ul>
+            </li>
+            
+            <li><strong>Setup domain & SSL:</strong>
+              <ul style="margin-left: 20px; margin-top: 5px;">
+                <li>Point domain ke server IP</li>
+                <li>Setup nginx/caddy sebagai reverse proxy</li>
+                <li>Enable HTTPS dengan Let's Encrypt</li>
+              </ul>
+            </li>
+            
+            <li><strong>Embed di website client:</strong>
+              <ul style="margin-left: 20px; margin-top: 5px;">
+                <li><code>&lt;script src="https://your-domain.com/chat-widget.iife.js"&gt;&lt;/script&gt;</code></li>
+                <li>Initialize dengan config yang sesuai</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <h4 style="margin-top: 20px; margin-bottom: 10px;">Example Integration:</h4>
+        <pre style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 5px; overflow-x: auto;"><code>&lt;!-- Di website client --&gt;
+&lt;script src="https://your-domain.com/chat-widget.iife.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.initChatWidget({
+    apiUrl: 'https://dkms.bnpb.go.id/ai/api/cms-backend/api/v1',
+    language: 'id',
+    theme: 'light'
+  }).then(() => {
+    console.log('✅ BNPB Chat Widget loaded!');
+  });
+&lt;/script&gt;</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let widgetScriptElement = null;
+    let startTime = null;
+
+    // Configuration
+    const config = {
+      apiUrl: 'https://dkms.bnpb.go.id/ai/api/cms-backend/api/v1',
+      language: 'id',
+      theme: 'light',
+    };
+
+    // Enhanced console logging
+    const consoleOutput = document.getElementById('console-output');
+    
+    function logToConsole(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString('id-ID');
+      const prefix = type === 'error' ? '❌ ERROR' : type === 'success' ? '✅ SUCCESS' : '📝 INFO';
+      const logMessage = `[${timestamp}] ${prefix}: ${message}`;
+      
+      consoleOutput.textContent += logMessage + '\n';
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      
+      if (type === 'error') {
+        console.error(message);
+      } else {
+        console.log(message);
+      }
+    }
+
+    function clearLogs() {
+      consoleOutput.textContent = 'Console cleared. Ready for new logs...\n';
+    }
+
+    function loadWidget() {
+      const widgetUrl = document.getElementById('widget-url').value.trim();
+      
+      if (!widgetUrl) {
+        alert('⚠️ Masukkan widget URL terlebih dahulu!');
+        return;
+      }
+
+      // Detect Ngrok URL and warn user
+      if (widgetUrl.includes('ngrok-free.app') || widgetUrl.includes('ngrok.io')) {
+        const confirmed = confirm(
+          '⚠️ WARNING: Ngrok Free Tier Detected!\n\n' +
+          'Ngrok free tier TIDAK AKAN BEKERJA untuk widget loading.\n\n' +
+          'Browser akan menolak script karena Ngrok mengembalikan HTML warning page, bukan JavaScript.\n\n' +
+          'Apakah Anda yakin ingin melanjutkan?\n' +
+          '(Akan gagal dengan error MIME type)'
+        );
+        
+        if (!confirmed) {
+          logToConsole('Load cancelled - Ngrok free tier not supported', 'info');
+          return;
+        }
+      }
+
+      // Update display
+      document.getElementById('current-widget-url').textContent = widgetUrl;
+      document.getElementById('widget-status').innerHTML = '<span class="badge badge-pending">Loading...</span>';
+      
+      clearLogs();
+      logToConsole('🚀 Starting widget load...', 'info');
+      logToConsole(`Widget URL: ${widgetUrl}`, 'info');
+
+      // Remove old script if exists
+      if (widgetScriptElement) {
+        widgetScriptElement.remove();
+        if (window.destroyChatWidget) {
+          window.destroyChatWidget();
+        }
+        logToConsole('Previous widget instance removed', 'info');
+      }
+
+      // Create and load new script
+      startTime = performance.now();
+      widgetScriptElement = document.createElement('script');
+      widgetScriptElement.src = widgetUrl;
+      
+      // Add CORS attributes
+      widgetScriptElement.crossOrigin = 'anonymous';
+      
+      widgetScriptElement.onload = function() {
+        logToConsole('Widget script loaded successfully!', 'success');
+        
+        // Initialize widget
+        if (window.initChatWidget) {
+          logToConsole('Initializing widget...', 'info');
+          
+          window.initChatWidget(config)
+            .then((app) => {
+              const loadTime = (performance.now() - startTime).toFixed(2);
+              
+              // Get widget info
+              const info = window.getWidgetInfo ? window.getWidgetInfo() : { version: 'Unknown' };
+              
+              // Update status
+              document.getElementById('widget-status').innerHTML = '<span class="badge badge-success">✓ Loaded</span>';
+              document.getElementById('widget-version').textContent = info.version || 'Unknown';
+              document.getElementById('load-time').textContent = `${loadTime}ms`;
+              
+              logToConsole(`Widget initialized successfully!`, 'success');
+              logToConsole(`Version: ${info.version}`, 'info');
+              logToConsole(`Load time: ${loadTime}ms`, 'info');
+              logToConsole(`API URL: ${config.apiUrl}`, 'info');
+              logToConsole(`Language: ${config.language}`, 'info');
+              logToConsole(`Theme: ${config.theme}`, 'info');
+            })
+            .catch((error) => {
+              document.getElementById('widget-status').innerHTML = '<span class="badge badge-error">✗ Init Error</span>';
+              logToConsole(`Failed to initialize widget: ${error.message}`, 'error');
+              logToConsole(error.stack || error.toString(), 'error');
+            });
+        } else {
+          document.getElementById('widget-status').innerHTML = '<span class="badge badge-error">✗ No initChatWidget</span>';
+          logToConsole('window.initChatWidget is not defined!', 'error');
+          logToConsole('This might mean the widget file did not load correctly', 'error');
+        }
+      };
+
+      widgetScriptElement.onerror = function(error) {
+        document.getElementById('widget-status').innerHTML = '<span class="badge badge-error">✗ Load Failed</span>';
+        logToConsole(`Failed to load widget script from: ${widgetUrl}`, 'error');
+        
+        if (widgetUrl.includes('ngrok-free.app') || widgetUrl.includes('ngrok.io')) {
+          logToConsole('', 'error');
+          logToConsole('⚠️ NGROK FREE TIER DETECTED!', 'error');
+          logToConsole('', 'error');
+          logToConsole('This is the EXPECTED behavior for Ngrok free tier.', 'error');
+          logToConsole('Ngrok returns HTML warning page instead of JavaScript.', 'error');
+          logToConsole('Browser rejects it with MIME type error.', 'error');
+          logToConsole('', 'error');
+          logToConsole('SOLUTIONS:', 'info');
+          logToConsole('1. Use Ngrok paid tier ($8/month)', 'info');
+          logToConsole('2. Deploy to production server', 'info');
+          logToConsole('3. Use localhost URL for local testing', 'info');
+          logToConsole('4. Use alternative: localtunnel, serveo, cloudflare tunnel', 'info');
+        } else {
+          logToConsole('Possible issues:', 'error');
+          logToConsole('  1. URL is incorrect', 'error');
+          logToConsole('  2. Server is not running', 'error');
+          logToConsole('  3. CORS is blocking the request', 'error');
+          logToConsole('  4. Network connectivity issue', 'error');
+        }
+      };
+
+      document.body.appendChild(widgetScriptElement);
+      logToConsole('Script tag added to DOM, waiting for load...', 'info');
+    }
+
+    function destroyWidget() {
+      if (window.destroyChatWidget) {
+        window.destroyChatWidget();
+        document.getElementById('widget-status').innerHTML = '<span class="badge badge-pending">Destroyed</span>';
+        logToConsole('Widget destroyed', 'success');
+      } else {
+        logToConsole('destroyChatWidget is not available', 'error');
+      }
+    }
+
+    // Load widget URL from localStorage if available
+    window.addEventListener('DOMContentLoaded', function() {
+      const savedUrl = localStorage.getItem('widget-url');
+      if (savedUrl) {
+        document.getElementById('widget-url').value = savedUrl;
+        logToConsole('Loaded saved URL from localStorage', 'info');
+      }
+
+      // Save URL to localStorage when changed
+      document.getElementById('widget-url').addEventListener('input', function(e) {
+        localStorage.setItem('widget-url', e.target.value);
+      });
+
+      logToConsole('Test page ready!', 'success');
+      logToConsole('', 'info');
+      logToConsole('LocalTunnel URL detected!', 'success');
+      logToConsole('Widget URL: https://cold-gifts-boil.loca.lt/chat-widget.iife.js', 'info');
+      logToConsole('', 'info');
+      logToConsole('Click "Load Widget" to test!', 'info');
+    });
+  </script>
+</body>
+</html>

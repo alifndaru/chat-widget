@@ -1,0 +1,82 @@
+// Initialize untuk global components
+@import "init";
+
+// Components (global) - tetap seperti semula
+@import "./core/components/components";
+@import "components/stepper/multistep";
+@import "components/landing";
+@import "components/btn-secondary";
+
+// Layout - tetap seperti semula
+@import "./core/layout/base/layout";
+@import "layout/layout";
+
+// Chat widget styles - simplified for iframe isolation
+.bnpb-webchat {
+  // Import widget-specific init untuk isolasi CSS variables
+  @import "init-widget";
+  @import "components/chat";
+
+  // Basic styling for iframe isolation - no need for aggressive !important rules
+  // The iframe provides complete CSS isolation from parent page
+
+  // Ensure proper z-index hierarchy within iframe
+  .floating-chat-button {
+    z-index: 999999;
+  }
+
+  .message-drawer {
+    z-index: 999998;
+  }
+
+  // Basic layout protection
+  .message-drawer,
+  .floating-chat-button {
+    position: fixed;
+  }
+
+  .message-drawer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Basic scrolling behavior
+  .message-drawer-body,
+  .messages-list-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  // Basic conversation styling
+  .conversation-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+  }
+
+  .conversation-item:hover {
+    background-color: var(--bs-list-group-hover-bg);
+  }
+
+  .conversation-preview {
+    margin-bottom: 0.25rem;
+  }
+
+  .conversation-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .conversation-time {
+    font-size: var(--bs-font-size-sm);
+    color: var(--bs-gray-500);
+  }
+
+  .conversation-arrow {
+    color: var(--bs-gray-400);
+    margin-left: 0.5rem;
+  }
+}

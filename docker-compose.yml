@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bnpb_chat_widget
+    image: bnpb-chat-widget:latest
+    ports:
+      - "${FRONTEND_PORT:-6184}:80"
+    env_file:
+      - .env
+    networks:
+      - laradock_shared
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    extra_hosts:
+      - "bnpb_backend:host-gateway"
+    restart: unless-stopped
+
+networks:
+  laradock_shared:
+    external: true
+    name: laradock_shared
