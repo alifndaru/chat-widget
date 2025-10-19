@@ -5,20 +5,42 @@
 
         <!-- Centered Chat Components in iframe mode -->
         <div :class="chatContainerClasses">
-            <ConversationList
-                v-if="isChatOpen && !selectedConversation"
-                @open-conversation="handleOpenConversation"
-                @start-new-conversation="handleStartNewConversation"
-                @close="toggleChat"
-            />
+            <!-- Home Content with Footer -->
+            <div v-if="isChatOpen && activeView === 'home'" class="flex flex-col h-full">
+                <div class="flex-1">
+                    <HomeContent @close="toggleChat" @switch-to-chat="handleTabChangeToChat" />
+                </div>
+                <FooterNavigation
+                    :active-tab="activeView"
+                    @tab-change="handleTabChange"
+                />
+            </div>
 
-            <MessageDrawer
-                v-if="isChatOpen && selectedConversation"
-                :is-open="isChatOpen"
-                :conversation="selectedConversation"
-                @close="toggleChat"
-                @back="handleBack"
-            />
+            <!-- Chat Content without Footer -->
+            <div v-if="activeView === 'chat'" class="flex flex-col h-full">
+                <div class="flex-1">
+                    <ConversationList
+                        v-if="!selectedConversation"
+                        @open-conversation="handleOpenConversation"
+                        @start-new-conversation="handleStartNewConversation"
+                        @close="toggleChat"
+                    />
+
+                    <MessageDrawer
+                        v-if="selectedConversation"
+                        :is-open="isChatOpen"
+                        :conversation="selectedConversation"
+                        @close="toggleChat"
+                        @back="handleBack"
+                    />
+                </div>
+
+                <!-- Footer Navigation - Always show in chat tab -->
+                <FooterNavigation
+                    :active-tab="activeView"
+                    @tab-change="handleTabChange"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -28,16 +50,19 @@ import { ref, computed } from "vue";
 import FloatingChatButton from "./FloatingChatButton.vue";
 import ConversationList from "./ConversationList.vue";
 import MessageDrawer from "./MessageDrawer.vue";
+import HomeContent from "./HomeContent.vue";
+import FooterNavigation from "./FooterNavigation.vue";
 import type { ConversationData } from "@/core/services/ConversationService";
 
 const isChatOpen = ref(false);
 const selectedConversation = ref<ConversationData | null>(null);
+const activeView = ref<'home' | 'chat'>('home');
 
 // Computed property for chat container classes (floating centered in iframe mode)
 const chatContainerClasses = computed(() => {
     // For iframe mode, use floating centered positioning with calculated dimensions
     if (isContainedMode.value) {
-        const baseClasses = 'w-full max-w-[420px] h-[calc(100vh-45px)] flex flex-col pointer-events-auto fixed top-4 bottom-4 left-1/2 transform -translate-x-1/2 mx-auto px-4 z-[1000]';
+        const baseClasses = 'w-full max-w-[420px] h-[600px] max-h-[75vh] flex flex-col pointer-events-auto fixed bottom-6 right-6 mx-auto z-[1000] rounded-2xl';
         const transitionClasses = 'transition-all duration-300 ease-out';
 
         let stateClasses = 'widget-closed';
@@ -91,10 +116,23 @@ const toggleChat = () => {
     isChatOpen.value = !isChatOpen.value;
     if (!isChatOpen.value) {
         selectedConversation.value = null;
+        activeView.value = 'home'; // Reset to home when closing
     }
 
     // Communicate state change to parent iframe
     communicateStateToParent();
+};
+
+const handleTabChange = (tab: 'home' | 'chat') => {
+    activeView.value = tab;
+    if (tab === 'chat') {
+        selectedConversation.value = null; // Reset conversation when switching to chat tab
+    }
+};
+
+const handleTabChangeToChat = () => {
+    activeView.value = 'chat';
+    selectedConversation.value = null; // Reset conversation when switching to chat tab
 };
 
 const handleOpenConversation = (conversation: ConversationData) => {
@@ -139,9 +177,6 @@ const communicateStateToParent = () => {
                     state: state
                 }
             }, '*'); // In production, use specific origin
-
-            console.log('📡 Chat widget state communicated to parent:', state);
-            console.log('🎨 CSS variables communicated to parent:', cssVariables);
         }
     } catch (error) {
         console.warn('Failed to communicate state to parent:', error);
@@ -176,14 +211,14 @@ const handleStartNewConversation = async () => {
 
 .widget-conversation-list {
     --chat-widget-width: 380px;
-    --chat-widget-height: 600px;
-    --chat-widget-max-height: 80vh;
+    --chat-widget-height: 500px;
+    --chat-widget-max-height: 70vh;
 }
 
 .widget-message-drawer {
     --chat-widget-width: 420px;
-    --chat-widget-height: 650px;
-    --chat-widget-max-height: 85vh;
+    --chat-widget-height: 500px;
+    --chat-widget-max-height: 70vh;
 }
 
 /* Iframe contained mode - calculated dimensions with proper spacing */

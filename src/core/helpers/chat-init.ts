@@ -229,36 +229,38 @@ export class ChatInitializationHelper {
       
       if (!visitorUUID) {
         // No visitor UUID in localStorage, initialize new session
-        console.log('📝 No existing visitor, creating new session...');
         return await this.quickInit();
       }
 
       // Verify visitor exists on backend
       try {
         const visitorData = await VisitorService.getVisitorByUUID(visitorUUID);
-        
+
         if (!visitorData) {
           // Visitor UUID exists locally but not on backend, reinitialize
-          console.log('⚠️ Visitor not found on backend, reinitializing...');
           VisitorService.clearVisitorUUID();
           return await this.quickInit();
         }
 
         // Visitor exists, check for active conversation
-        const conversation = await ConversationService.getActiveConversationByVisitorUuid(visitorUUID);
-        
+        const conversation =
+          await ConversationService.getActiveConversationByVisitorUuid(
+            visitorUUID
+          );
+
         if (!conversation) {
           // Create new conversation for existing visitor
-          console.log('📝 Creating new conversation for existing visitor...');
           const newConversation = await ConversationService.createConversation({
-            visitor_uuid: visitorUUID
+            visitor_uuid: visitorUUID,
           });
 
           return {
             success: !!newConversation,
             visitorUUID,
             conversation: newConversation,
-            error: newConversation ? undefined : 'Failed to create conversation'
+            error: newConversation
+              ? undefined
+              : "Failed to create conversation",
           };
         }
 
@@ -266,13 +268,11 @@ export class ChatInitializationHelper {
         return {
           success: true,
           visitorUUID,
-          conversation
+          conversation,
         };
-
       } catch (error) {
         // Backend error, try to reinitialize
-        console.error('Error verifying session:', error);
-        console.log('🔄 Reinitializing session due to error...');
+        console.error("Error verifying session:", error);
         VisitorService.clearVisitorUUID();
         return await this.quickInit();
       }

@@ -122,11 +122,6 @@ window.initChatWidget = async (config = {}) => {
     // Store instance
     widgetInstance = { app, containerId };
 
-    console.log("✅ BNPB Chat Widget initialized successfully");
-    console.log("   API URL:", apiUrl);
-    console.log("   Language:", config.language || "default (id)");
-    console.log("   Theme:", config.theme || "default (light)");
-
     return app;
   } catch (error) {
     console.error("❌ Failed to initialize BNPB Chat Widget:", error);
@@ -144,7 +139,6 @@ window.destroyChatWidget = () => {
         container.remove();
       }
       widgetInstance = null;
-      console.log("✅ BNPB Chat Widget destroyed");
     } catch (error) {
       console.error("❌ Failed to destroy chat widget:", error);
     }

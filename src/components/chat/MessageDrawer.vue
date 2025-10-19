@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full h-[calc(100vh-45px)] bg-white rounded-[16px] shadow-[0_8px_32px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
+    class="w-full h-[630px] max-h-[75vh] bg-white rounded-[16px] shadow-[0_8px_32px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
     :class="{ 'rounded-none': isContainedMode }"
   >
     <!-- Chat View -->
@@ -18,7 +18,7 @@
 
       <div
         ref="chatContainer"
-        class="relative overflow-y-auto overflow-x-hidden flex-1 bg-[var(--bs-gray-100,#f8f9fa)]"
+        class="relative overflow-y-auto overflow-x-hidden flex-1 bg-white"
       >
         <!-- Loading Spinner for Conversation -->
         <div
@@ -190,7 +190,6 @@ export default defineComponent({
     // --- State ---
     const chatContainer = ref<HTMLElement | null>(null);
     const loadMoreTrigger = ref<HTMLElement | null>(null);
-    const messageListRef = ref<InstanceType<typeof MessageList> | null>(null);
     const newMessage = ref("");
     const currentView = ref<"list" | "chat">("list");
     const isExpanded = ref(false);
@@ -471,6 +470,7 @@ export default defineComponent({
       intersectionObserver = new IntersectionObserver(
         (entries) => {
           const entry = entries[0];
+          if (!entry) return;
           const now = Date.now();
           if (
             entry.isIntersecting &&

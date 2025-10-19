@@ -1,18 +1,18 @@
 <template>
   <div
-    class="py-4 px-4 bg-[var(--bs-orange)] text-white border-b border-[var(--bs-border-color-translucent)]"
+    class="py-4 px-4 bg-[var(--bs-orange)] text-white border-b border-[var(--bs-border-color-translucent)] rounded-t-[16px]"
   >
     <div class="flex items-center justify-between">
       <div class="flex items-center">
-        <button
-          v-if="showBackButton"
-          class="p-0 mr-3 bg-transparent border-0 cursor-pointer rounded transition-opacity duration-200 inline-flex items-center justify-center hover:opacity-80 focus:outline-2 focus:outline-white focus:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed [&_i]:text-white"
-          :title="translate('back') || 'Back'"
-          @click="emitBack"
-        >
+      <button
+        v-if="showBackButton"
+        class="p-0 mr-3 bg-transparent border-0 rounded transition-opacity duration-200 inline-flex items-center justify-center hover:opacity-80 focus:outline-2 focus:outline-white focus:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed [&_i]:text-white"
+        :title="translate('back') || 'Back'"
+        @click="emitBack"
+      >
           <i class="ki-outline ki-arrow-left text-2xl p-0"></i>
         </button>
-        <div class="ml-2">
+        <div class="ml-2 flex-1 text-center">
           <div class="mb-0 text-white chat-header-title">{{ translate(title) }}</div>
         </div>
       </div>
@@ -28,21 +28,17 @@
 import { useI18n } from "vue-i18n";
 import MinimizeButton from "@/components/chat/MinimizeButton.vue";
 
-interface Props {
+withDefaults(defineProps<{
   title: string;
   showBackButton?: boolean;
-}
-
-interface Emits {
-  (e: "close"): void;
-  (e: "back"): void;
-}
-
-withDefaults(defineProps<Props>(), {
+}>(), {
   showBackButton: false,
 });
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "back"): void;
+}>();
 
 const { t, te } = useI18n();
 function translate(text: string) {

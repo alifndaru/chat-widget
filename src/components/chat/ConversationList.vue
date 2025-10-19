@@ -1,12 +1,12 @@
 <template>
   <div
-    class="w-full h-[calc(100vh-45px)] bg-white rounded-[16px] shadow-[0_8px_32px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
+    class="w-full h-full bg-white shadow-[0_8px_32px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
     :class="{ 'rounded-none': isContainedMode }"
   >
     <div class="flex flex-col h-full">
       <ChatHeader title="poweredByBNPB" @close="emitClose" />
 
-      <div class="flex-1 overflow-y-auto bg-[var(--bs-gray-100,#f8f9fa)]">
+      <div ref="scrollContainer" class="flex-1 overflow-y-auto bg-white max-h-[400px]">
         <!-- Loading State -->
         <div
           v-if="conversationStore.isLoadingConversations"
@@ -102,24 +102,25 @@
         </div>
       </div>
 
-      <div class="p-3 bg-[var(--bs-body-bg)] border-t border-[var(--bs-border-color-translucent)]">
+      <!-- Ask a Question Button - Centered above footer -->
+      <div class="p-4 bg-transparent border-t border-[var(--bs-border-color-translucent)]">
         <button
-          class="w-full py-2 px-4 bg-[var(--bs-orange)] text-white rounded-lg hover:bg-[var(--bs-orange)]/90 transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full py-3 px-4 bg-[var(--bs-orange)] text-white border-0 outline-none rounded-lg hover:bg-[var(--bs-orange)]/90 active:bg-[var(--bs-orange)]/80 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm cursor-pointer"
           :disabled="conversationStore.isLoadingConversations"
           @click="startNewConversation"
         >
           <div
             v-if="conversationStore.isLoadingConversations"
-            class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+            class="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
             role="status"
           >
             <div class="sr-only">{{ translate("loading") }}</div>
           </div>
-          <i v-else class="ki-outline ki-send text-xl"></i>
+          <i v-else class="ki-outline ki-plus text-lg"></i>
           {{
             conversationStore.isLoadingConversations
               ? translate("creating")
-              : translate("askAI")
+              : "Ask a question"
           }}
         </button>
       </div>
@@ -128,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch, computed, nextTick } from "vue";
 import { useConversationStore } from "@/stores/conversation";
 import type { ConversationData } from "@/core/services/ConversationService";
 import { useI18n } from "vue-i18n";
@@ -173,50 +174,54 @@ const isContainedMode = computed(() => {
   );
 });
 
-// Infinite scroll setup
-const sentinel = ref<HTMLElement | null>(null);
-let observer: IntersectionObserver | null = null;
+// Infinite scroll setup using scroll events
+const scrollContainer = ref<HTMLElement | null>(null);
 
-function setupObserver() {
-  if (observer) observer.disconnect();
-  if (!sentinel.value) return;
+function setupScrollListener() {
+  if (!scrollContainer.value) return null;
 
-  observer = new IntersectionObserver(
-    async (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          await conversationStore.loadMoreConversations();
-        }
-      }
-    },
-    {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.1,
-    },
-  );
+  const container = scrollContainer.value;
+  let isLoading = false;
 
-  observer.observe(sentinel.value);
+  const handleScroll = async () => {
+    if (isLoading || !conversationStore.hasMoreConversations || conversationStore.isLoadingMore) {
+      return;
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+    // Load more when user is within 100px of the bottom
+    if (distanceFromBottom < 100) {
+      isLoading = true;
+      await conversationStore.loadMoreConversations();
+      isLoading = false;
+    }
+  };
+
+  container.addEventListener('scroll', handleScroll, { passive: true });
+
+  // Return cleanup function
+  return () => {
+    container.removeEventListener('scroll', handleScroll);
+  };
 }
 
+let cleanupScrollListener: (() => void) | null = null;
+
 onMounted(async () => {
-  // Optionally, you can check visitor tracking here if needed
+  // Load initial conversations
   await conversationStore.loadConversations();
-  setupObserver();
+
+  // Wait for DOM to be fully rendered, then setup scroll listener
+  await nextTick();
+  cleanupScrollListener = setupScrollListener();
 });
 
-watch(
-  () => conversationStore.isLoadingConversations,
-  (loading) => {
-    if (!loading) {
-      setupObserver();
-    }
-  },
-  { immediate: false },
-);
-
 onBeforeUnmount(() => {
-  if (observer) observer.disconnect();
+  if (cleanupScrollListener) {
+    cleanupScrollListener();
+  }
 });
 
 const openConversation = (conversation: any) => {

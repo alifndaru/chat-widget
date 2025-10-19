@@ -10,7 +10,6 @@
       <message-in
         v-else-if="message.sender !== 'visitor'"
         :name="translate('support')"
-        :image="'/media/avatars/blank.png'"
         :time="
           new Date(message.timestamp).toLocaleTimeString([], {
             hour: '2-digit',
@@ -22,7 +21,6 @@
       <!-- Outgoing Messages -->
       <message-out
         v-else
-        :image="'/media/avatars/blank.png'"
         :time="
           new Date(message.timestamp).toLocaleTimeString([], {
             hour: '2-digit',

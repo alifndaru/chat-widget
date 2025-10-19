@@ -26,16 +26,23 @@ export const useConversationStore = defineStore('conversation', () => {
     isLoadingConversations.value = true;
     error.value = null;
     pageOffset.value = 0;
-    hasMoreConversations.value = false;
+    hasMoreConversations.value = true; // Assume there might be more
 
     try {
       const list = await ConversationService.getConversationsByCurrentVisitor();
       conversations.value = [...list];
+
+      // If we got fewer than expected, assume no more data
+      if (list.length < 10) {
+        hasMoreConversations.value = false;
+      }
+
       return list;
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Gagal memuat percakapan';
       console.error('Error loading conversations:', err);
+      hasMoreConversations.value = false;
       return [];
     } finally {
       isLoadingConversations.value = false;
@@ -44,6 +51,12 @@ export const useConversationStore = defineStore('conversation', () => {
 
   const loadMoreConversations = async (): Promise<ConversationData[]> => {
     const visitorStore = useVisitorStore();
+
+    // Initialize visitor if not already done
+    if (!visitorStore.visitorUUID) {
+      await visitorStore.init();
+    }
+
     if (
       !visitorStore.visitorUUID ||
       !hasMoreConversations.value ||
@@ -55,18 +68,23 @@ export const useConversationStore = defineStore('conversation', () => {
     isLoadingMore.value = true;
 
     try {
-      pageOffset.value += pageLimit.value;
+      const nextOffset = pageOffset.value + pageLimit.value;
       const list = await ConversationService.getConversationsByVisitorUuid(
         visitorStore.visitorUUID,
         pageLimit.value,
-        pageOffset.value,
+        nextOffset,
       );
+
+      pageOffset.value = nextOffset;
 
       if (list.length < pageLimit.value) {
         hasMoreConversations.value = false;
       }
 
-      conversations.value = [...conversations.value, ...list];
+      if (list.length > 0) {
+        conversations.value = [...conversations.value, ...list];
+      }
+
       return list;
     } catch (err) {
       console.error('Error loading more conversations:', err);

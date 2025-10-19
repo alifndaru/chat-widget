@@ -57,7 +57,6 @@ class ApiService {
     
     const cleanURL = baseURL.endsWith("/") ? baseURL.slice(0, -1) : baseURL;
     ApiService.vueInstance.axios.defaults.baseURL = cleanURL;
-    console.log('✅ API Base URL set to:', cleanURL);
   }
 
   /**

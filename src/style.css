@@ -53,3 +53,31 @@
 .bnpb-webchat > * {
   pointer-events: auto !important;
 }
+
+/* Override Tailwind's default font-family CSS variables */
+.bnpb-webchat {
+  --default-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Ensure Inter font is used throughout the chat widget */
+.bnpb-webchat,
+.bnpb-webchat *,
+.bnpb-webchat button,
+.bnpb-webchat div,
+.bnpb-webchat span,
+.bnpb-webchat p,
+.bnpb-webchat h1,
+.bnpb-webchat h2,
+.bnpb-webchat h3,
+.bnpb-webchat h4,
+.bnpb-webchat h5,
+.bnpb-webchat h6,
+.bnpb-webchat textarea,
+.bnpb-webchat input {
+  font-family: var(--default-font-family) !important;
+}
+
+/* Override Tailwind's default font-family */
+.font-sans {
+  font-family: var(--default-font-family) !important;
+}
