@@ -239,4 +239,5 @@ export const en = {
   wizards: "Wizards",
   yesterday: "Yesterday",
   scraped_data: "Collected Data",
+  askaquestion: "Ask a question",
 };

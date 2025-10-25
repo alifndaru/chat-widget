@@ -118,9 +118,7 @@
           </div>
           <i v-else class="ki-outline ki-plus text-lg"></i>
           {{
-            conversationStore.isLoadingConversations
-              ? translate("creating")
-              : "Ask a question"
+            conversationStore.isLoadingConversations ? translate("loading") : translate("askaquestion")
           }}
         </button>
       </div>

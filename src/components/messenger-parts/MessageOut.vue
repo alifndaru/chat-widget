@@ -11,7 +11,8 @@
         <!--begin::Details-->
         <div class="text-[var(--bs-gray-500)] text-xs">{{ formattedTime }}</div>
         <div v-if="isFailed" class="text-xs font-medium text-red-600 ml-2">
-          <i class="bi bi-exclamation-triangle"></i> Failed
+          <i class="bi bi-exclamation-triangle"></i>
+          {{ $t("messageFailed") }}
         </div>
         <!--end::Details-->
       </div>

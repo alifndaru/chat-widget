@@ -242,4 +242,6 @@ export const id = {
     "Text Ini dihasilkan oleh AI , harap lakukan verifikasi ganda melalui file referensi",
   supportedDKMSByBNPB: "Didukung oleh DKMS dari BNPB",
   scraped_data: "Data yang dikumpulkan",
+  messageFailed: "Gagal",
+  askaquestion: "Silakan ajukan pertanyaan",
 };
