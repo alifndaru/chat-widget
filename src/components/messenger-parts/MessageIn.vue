@@ -7,18 +7,22 @@
     <!--begin::Wrapper-->
     <div class="flex flex-col items-start relative">
       <!--begin::User-->
-      <div class="flex items-center mb-2">
+      <div class="flex items-center mb-2 gap-2">
         <!--begin::Details-->
         <div class="text-[var(--bs-gray-500)] text-xs">{{ formattedTime }}</div>
+        <div v-if="collectionSource" class="text-gray-400 text-xs dark:text-gray-500">
+          • {{ collectionSource }}
+        </div>
         <!--end::Details-->
       </div>
       <!--end::User-->
 
       <!--begin::Message Container-->
-      <div class="relative flex items-center gap-2">
+      <div class="relative flex items-start gap-2 max-w-full">
         <!--begin::Text-->
         <div
           class="message-bubble-in relative z-[5] text-[var(--bs-gray-900)] px-4 py-3 rounded-2xl rounded-tl-sm w-fit max-w-full border border-gray-200"
+          style="word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; max-width: 100% !important; width: fit-content !important; display: inline-block !important;"
           data-kt-element="message-text"
         >
           <!-- Loading animation for AI thinking -->
@@ -48,7 +52,6 @@
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div
             v-else
-            v-html="renderedHtml"
             style="
               color: var(--bs-gray-900) !important;
               font-size: var(--bs-font-size-base) !important;
@@ -60,7 +63,14 @@
               border: none !important;
               padding: 0 !important;
               margin: 0 !important;
+              word-wrap: break-word !important;
+              overflow-wrap: break-word !important;
+              white-space: pre-wrap !important;
+              max-width: 100% !important;
+              width: fit-content !important;
+              display: inline-block !important;
             "
+            v-html="renderedHtml"
           ></div>
         </div>
         <!--end::Text-->
@@ -88,17 +98,20 @@
 
 <script lang="ts">
 import { defineComponent, computed, ref } from "vue";
+import type { PropType } from "vue";
 import { useI18n } from "vue-i18n";
-// import { formatMessageTime } from "@/core/helpers/formatDate";
+import type { ChatMessage } from "@/types/chat";
 
 // Basic HTML escape to prevent XSS
-const escapeHtml = (str: string) =>
-  str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+const escapeHtml = (str: string) => {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&")
+    .replace(/</g, "<")
+    .replace(/>/g, ">")
+    .replace(/"/g, `"`)
     .replace(/'/g, "&#039;");
+};
 
 // Apply minimal inline markdown formatting
 const inlineFormat = (str: string) => {
@@ -111,7 +124,7 @@ const inlineFormat = (str: string) => {
 };
 
 // Convert a markdown-like string to basic HTML
-const convertMarkdownToHtml = (md?: string): string => {
+const convertMarkdownToHtml = (md?: string, references?: Array<{filename: string; url: string}> | string[], translateFn?: (text: string) => string): string => {
   if (!md) return "";
   const safe = escapeHtml(md);
   const lines = safe.split(/\r?\n/);
@@ -130,7 +143,7 @@ const convertMarkdownToHtml = (md?: string): string => {
     const match = line.match(/^[*-]\s+(.+)/);
     if (match) {
       if (!inList) {
-        html += '<ul class="mb-2 ps-4">';
+        html += '<ul class="list-disc mb-2 ps-4">';
         inList = true;
       }
       html += `<li>${inlineFormat(match[1])}</li>`;
@@ -146,6 +159,69 @@ const convertMarkdownToHtml = (md?: string): string => {
   }
 
   flushList();
+
+      // Add references as unordered list if provided
+      if (references && references.length > 0) {
+        // Filter out references that are empty objects or invalid
+        const validReferences = references.filter(ref => {
+          if (typeof ref === 'string') {
+            return ref.trim() !== '';
+          } else {
+            return ref.filename && ref.url && ref.filename.trim() !== '' && ref.url.trim() !== '';
+          }
+        });
+
+        // Only show references section if there are valid references
+        if (validReferences.length > 0) {
+          html += '<div class="mt-3 pt-3 border-t border-gray-200">';
+          html += `<p class="mb-2 text-sm font-medium text-gray-700">${translateFn?.('references') || 'References:'}</p>`;
+          html += '<ul class="list-disc mb-2 ps-4">';
+      for (const ref of validReferences) {
+        let filename: string;
+        let url: string;
+
+        if (typeof ref === 'string') {
+          // Handle string format (URL only)
+          url = ref;
+          // Extract filename from URL or generate a meaningful one
+          try {
+            const urlObj = new URL(url);
+            const pathname = urlObj.pathname;
+            const filenameFromPath = pathname.split('/').pop() || pathname;
+            
+            // Check if filename contains only numbers, underscores, and dashes
+            if (filenameFromPath && /^[0-9_-]+$/.test(filenameFromPath)) {
+              // If filename is just numbers/underscores/dashes, return the full URL as reference content
+              filename = url;
+            } else {
+              filename = filenameFromPath || 'Document';
+            }
+          } catch {
+            // If URL parsing fails, use a generic name
+            filename = url;
+          }
+        } else {
+          // Handle object format {filename, url}
+          filename = ref.filename;
+          url = ref.url;
+        }
+
+        if (filename && url) {
+          const linkText = inlineFormat(filename);
+          // Check if the URL is actually a URL (starts with http:// or https://)
+          if (url.startsWith('http://') || url.startsWith('https://')) {
+            html += `<li><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="text-orange-600 hover:underline">${linkText}</a></li>`;
+          } else {
+            // If it's not a URL, just display as plain text
+            html += `<li>${linkText}</li>`;
+          }
+        }
+      }
+      html += '</ul>';
+      html += '</div>';
+    }
+  }
+
   return html;
 };
 
@@ -153,10 +229,11 @@ export default defineComponent({
   name: "MessageIn",
   props: {
     name: { type: String, default: "BNPB Assistant" },
-    // image: { type: String, default: "" },
     time: { type: String, default: "" },
     text: { type: String, default: "" },
     isThinking: { type: Boolean, default: false },
+    references: { type: Array as PropType<Array<{filename: string; url: string}>>, default: () => [] },
+    metadata: { type: Object as PropType<ChatMessage['metadata']>, default: () => ({}) },
   },
   setup(props) {
     const { t, te } = useI18n();
@@ -169,7 +246,17 @@ export default defineComponent({
       }
     };
 
-    const renderedHtml = computed(() => convertMarkdownToHtml(props.text));
+    const renderedHtml = computed(() => convertMarkdownToHtml(props.text || '', props.references, translate));
+
+    // Collection source indicator with default fallback
+    const collectionSource = computed(() => {
+      const source = props.metadata?.collection_source || 'documents';
+      // Handle scraped_data source specifically
+      if (source === 'scraped_data') {
+        return translate('scraped_data') || 'Data yang dikumpulkan';
+      }
+      return translate(source);
+    });
 
     // Format time using dayjs with browser timezone
     const formattedTime = computed(() => {
@@ -195,7 +282,7 @@ export default defineComponent({
       }
     };
 
-    return { renderedHtml, formattedTime, isHovered, handleCopy, translate };
+    return { renderedHtml, collectionSource, formattedTime, isHovered, handleCopy, translate };
   },
 });
 </script>
@@ -203,7 +290,7 @@ export default defineComponent({
 <style scoped>
 /* Message bubble background */
 .message-bubble-in {
-  background-color: var(--bs-gray-100);
+  background-color: var(--bs-gray-200);
 }
 
 /* Custom keyframes for thinking animation */

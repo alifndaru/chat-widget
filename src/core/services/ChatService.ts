@@ -38,7 +38,7 @@ class ChatService {
       const settings = await ConfigurationsService.getSettings();
 
       const pythonServiceSettings = settings.filter(
-        (setting) => setting.source === "python_service",
+        (setting) => setting.source === "python_service"
       );
       pythonServiceSettings.forEach((setting) => {
         if (setting.key === "ai_source") {
@@ -66,7 +66,7 @@ class ChatService {
    * Buat conversation baru dengan visitor UUID
    */
   static async createConversation(
-    visitorUUID: string,
+    visitorUUID: string
   ): Promise<ChatConversation> {
     try {
       if (!visitorUUID) {
@@ -92,12 +92,12 @@ class ChatService {
         await new Promise((resolve) => setTimeout(resolve, 100));
 
         fullConversationData = await ConversationService.getConversationByUUID(
-          conversationData.uuid,
+          conversationData.uuid
         );
       } catch (error) {
         console.warn(
           "Could not fetch full conversation data, retrying:",
-          error,
+          error
         );
 
         // Retry once more with longer delay
@@ -105,16 +105,16 @@ class ChatService {
           await new Promise((resolve) => setTimeout(resolve, 500));
           fullConversationData =
             await ConversationService.getConversationByUUID(
-              conversationData.uuid,
+              conversationData.uuid
             );
         } catch (retryError) {
           console.error(
             "Failed to fetch conversation data even after retry:",
-            retryError,
+            retryError
           );
           // Use the original data but log that we don't have ID
           console.warn(
-            "ChatService: Creating conversation without ID, messages will not be saved to database",
+            "ChatService: Creating conversation without ID, messages will not be saved to database"
           );
         }
       }
@@ -152,12 +152,12 @@ class ChatService {
         nextBeforeId,
       } = await MessageService.getMessageHistory(
         conversation.uuid,
-        50, // default limit
+        50 // default limit
       );
 
       const messages: ChatMessage[] = messagesData
         .map((msg: MessageData) => ({
-          id: msg.id.toString(),
+          id: msg.id?.toString() || this.generateMessageUuid(),
           // Treat "visitor" as sent messages, others as received
           type: (msg.sender === "visitor" ? "sent" : "received") as
             | "sent"
@@ -169,6 +169,7 @@ class ChatService {
           engine: msg.engine,
           message_type: msg.message_type,
           is_successful: msg.is_successful,
+          metadata: msg.metadata, // Preserve metadata including references
         }))
         // Ensure messages are sorted by timestamp (oldest first) for proper chat flow
         .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -184,7 +185,7 @@ class ChatService {
   static async loadOlderMessages(
     conversationUuid: string,
     oldestMessageId: number,
-    limit: number = 20,
+    limit: number = 20
   ): Promise<{
     messages: ChatMessage[];
     hasMore: boolean;
@@ -198,12 +199,12 @@ class ChatService {
       } = await MessageService.getMessageHistory(
         conversationUuid,
         limit,
-        oldestMessageId, // beforeId for pagination
+        oldestMessageId // beforeId for pagination
       );
 
       const messages: ChatMessage[] = messagesData
         .map((msg: MessageData) => ({
-          id: msg.id.toString(),
+          id: msg.id?.toString() || this.generateMessageUuid(),
           type: (msg.sender === "visitor" ? "sent" : "received") as
             | "sent"
             | "received",
@@ -214,6 +215,7 @@ class ChatService {
           engine: msg.engine,
           message_type: msg.message_type,
           is_successful: msg.is_successful,
+          metadata: msg.metadata, // Preserve metadata including references
         }))
         // Ensure messages are sorted by timestamp (oldest first) for proper chat flow
         .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -230,10 +232,10 @@ class ChatService {
    */
   private static mapToChatMessage(
     msg: MessageData,
-    conversationUuid: string,
+    conversationUuid: string
   ): ChatMessage {
     return {
-      id: msg.id.toString(),
+      id: msg.id?.toString() || this.generateMessageUuid(),
       type: msg.sender === "visitor" ? "sent" : "received",
       text: msg.message_content,
       timestamp: new Date(msg.created_at),
@@ -243,6 +245,7 @@ class ChatService {
       message_type: msg.message_type,
       is_successful: msg.is_successful,
       canRetry: msg.sender !== "visitor" && msg.is_successful === false, // AI messages that failed can be retried
+      metadata: msg.metadata, // Preserve metadata including references
     };
   }
 
@@ -253,7 +256,7 @@ class ChatService {
    */
   static async sendMessage(
     conversation: ChatConversation,
-    messageText: string,
+    messageText: string
   ): Promise<{
     visitorMessage: ChatMessage;
     aiMessage: ChatMessage;
@@ -295,10 +298,18 @@ class ChatService {
           message_content: messageText,
         });
 
-      // Check if response indicates AI failure
+      // Check if response indicates AI failure or warning
       const isAIResponseFailed =
-        response.status === "warning" ||
+        response.status === "error" ||
         response.message?.includes("AI response failed");
+
+      // Check if this is a warning response with no AI content
+      const isWarningWithNoContent =
+        response.status === "warning" &&
+        response.data &&
+        typeof response.data === "object" &&
+        "user_text" in response.data &&
+        !("documents_response" in response.data);
 
       let visitorMessage: ChatMessage;
       let aiMessage: ChatMessage;
@@ -326,7 +337,35 @@ class ChatService {
         };
       }
 
-      if (isAIResponseFailed) {
+      if (isWarningWithNoContent) {
+        // Handle warning response with no AI content - only create visitor message, no AI bubble
+        visitorMessage = {
+          id: this.generateMessageUuid(),
+          type: "sent",
+          text: messageText,
+          timestamp: new Date(),
+          conversation_uuid: conversation.uuid,
+          sender: "visitor",
+          engine: this.chatSettings.ai_source,
+          message_type: "text",
+        };
+
+        // Create empty AI message that won't be displayed
+        aiMessage = {
+          id: this.generateMessageUuid(),
+          type: "received",
+          text: "",
+          timestamp: new Date(),
+          conversation_uuid: conversation.uuid,
+          sender: "assistant",
+          engine: this.chatSettings.ai_source,
+          message_type: "text",
+          is_successful: false,
+          metadata: {
+            skip_display: true, // Flag to indicate this message should not be displayed
+          },
+        };
+      } else if (isAIResponseFailed) {
         // Handle AI failure - create error message using backend message
         const responseData = response.data;
 
@@ -338,7 +377,7 @@ class ChatService {
           // Single visitor message, create error message using backend message
           visitorMessage = this.mapToChatMessage(
             responseData as MessageData,
-            conversation.uuid,
+            conversation.uuid
           );
           // Use visitor-friendly error message instead of technical message
           aiMessage = {
@@ -379,12 +418,90 @@ class ChatService {
         }
       } else {
         // Normal case: AI response successful
-        // Backend returns single AI message, create visitor message in frontend
+        // Handle new response structure with documents_response and scraped_data_response
         const responseData = response.data;
-        aiMessage = this.mapToChatMessage(
-          (responseData || response) as MessageData,
-          conversation.uuid,
-        );
+
+        if (
+          responseData &&
+          typeof responseData === "object" &&
+          ("documents_response" in responseData ||
+            "scraped_data_response" in responseData)
+        ) {
+          // New API response structure - check for both documents_response and scraped_data_response
+          const documentsResponse = (responseData as any).documents_response;
+          const scrapedDataResponse = (responseData as any)
+            .scraped_data_response;
+
+          // Create AI message from documents_response if it exists and has content
+          const documentsMessage = documentsResponse?.message_content
+            ? {
+                id: this.generateMessageUuid(),
+                type: "received" as const,
+                text: documentsResponse.message_content,
+                timestamp: new Date(),
+                conversation_uuid: conversation.uuid,
+                sender: "assistant",
+                engine: this.chatSettings.ai_source,
+                message_type: "text",
+                is_successful: true,
+                metadata: documentsResponse?.metadata || {
+                  collection_source: "documents",
+                  references: documentsResponse?.references || [],
+                },
+              }
+            : null;
+
+          // Create AI message from scraped_data_response if it exists and has content
+          const scrapedDataMessage = scrapedDataResponse?.message_content
+            ? {
+                id: this.generateMessageUuid(),
+                type: "received" as const,
+                text: scrapedDataResponse.message_content,
+                timestamp: new Date(new Date().getTime() + 1000), // Add 1 second to ensure proper ordering
+                conversation_uuid: conversation.uuid,
+                sender: "assistant",
+                engine: this.chatSettings.ai_source,
+                message_type: "text",
+                is_successful: true,
+                metadata: scrapedDataResponse?.metadata || {
+                  collection_source: "scraped_data",
+                  references: scrapedDataResponse?.references || [],
+                },
+              }
+            : null;
+
+          // If we have both messages, we need to return them differently
+          // For now, use the first message as aiMessage and store the second in additionalMessage
+          if (documentsMessage && scrapedDataMessage) {
+            aiMessage = documentsMessage;
+            // Store the second message in additionalMessage for the component to handle
+            aiMessage.additionalMessage = scrapedDataMessage;
+          } else if (documentsMessage) {
+            aiMessage = documentsMessage;
+          } else if (scrapedDataMessage) {
+            aiMessage = scrapedDataMessage;
+          } else {
+            // Fallback if neither has content - this should not happen if we reached this point
+            aiMessage = {
+              id: this.generateMessageUuid(),
+              type: "received",
+              text: "No response from AI",
+              timestamp: new Date(),
+              conversation_uuid: conversation.uuid,
+              sender: "assistant",
+              engine: this.chatSettings.ai_source,
+              message_type: "text",
+              is_successful: true,
+            };
+          }
+        } else {
+          // Fallback: treat response as single message
+          aiMessage = this.mapToChatMessage(
+            (responseData || response) as MessageData,
+            conversation.uuid
+          );
+        }
+
         visitorMessage = {
           id: this.generateMessageUuid(),
           type: "sent",
@@ -494,7 +611,7 @@ class ChatService {
    */
   static convertToUIMessage(
     message: ChatMessage,
-    getAssetPath: (path: string) => string,
+    getAssetPath: (path: string) => string
   ) {
     return {
       id: message.id,

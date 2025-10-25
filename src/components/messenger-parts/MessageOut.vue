@@ -18,7 +18,7 @@
       <!--end::User-->
 
       <!--begin::Message Container-->
-      <div class="relative flex items-center gap-2">
+      <div class="relative flex items-start gap-2 max-w-full">
         <!--begin::Action Buttons-->
         <div
           class="opacity-0 invisible transition-all duration-200 ease-in-out z-10 flex flex-col gap-1"
@@ -49,6 +49,7 @@
         <!--begin::Text-->
         <div
           class="message-bubble-out relative z-[5] text-white px-4 py-3 rounded-2xl rounded-tr-sm w-fit max-w-full"
+          style="word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; max-width: 100% !important; width: fit-content !important; display: inline-block !important;"
           :class="{
             '!text-red-200 border border-red-500': isFailed,
           }"
@@ -69,6 +70,12 @@
               border: none !important;
               padding: 0 !important;
               margin: 0 !important;
+              word-wrap: break-word !important;
+              overflow-wrap: break-word !important;
+              white-space: pre-wrap !important;
+              max-width: 100% !important;
+              width: fit-content !important;
+              display: inline-block !important;
             "
           ></div>
         </div>
@@ -123,7 +130,7 @@ const convertMarkdownToHtml = (md?: string): string => {
     const match = line.match(/^[*-]\s+(.+)/);
     if (match) {
       if (!inList) {
-        html += '<ul class="mb-2 ps-4">';
+        html += '<ul class="list-disc mb-2 ps-4">';
         inList = true;
       }
       html += `<li>${inlineFormat(match[1])}</li>`;
@@ -167,7 +174,7 @@ export default defineComponent({
     // Reactive state for hover
     const isHovered = ref(false);
 
-    const renderedHtml = computed(() => convertMarkdownToHtml(props.text));
+    const renderedHtml = computed(() => convertMarkdownToHtml(props.text || ''));
 
     // Format time using dayjs with browser timezone
     const formattedTime = computed(() => {

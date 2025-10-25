@@ -10,7 +10,7 @@
       style="position: relative"
     >
       <ChatHeader
-        title="poweredByBNPB"
+        :title="translate('supportedDKMSByBNPB')"
         :show-back-button="true"
         @close="emitClose"
         @back="goBackToList"
@@ -18,7 +18,7 @@
 
       <div
         ref="chatContainer"
-        class="relative overflow-y-auto overflow-x-hidden flex-1 bg-white"
+        class="relative overflow-y-auto overflow-x-hidden flex-1 bg-[var(--bs-gray-100,#f8f9fa)]"
       >
         <!-- Loading Spinner for Conversation -->
         <div
@@ -150,6 +150,12 @@
             <i v-else class="ki-outline ki-send text-base text-white"></i>
           </button>
         </div>
+        <!-- AI Response Disclaimer -->
+        <div class="px-4 pb-2">
+          <p class="text-xs text-[var(--bs-gray-500)] text-center">
+            {{ translate("aiResponseDisclaimer") }}
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -190,6 +196,7 @@ export default defineComponent({
     // --- State ---
     const chatContainer = ref<HTMLElement | null>(null);
     const loadMoreTrigger = ref<HTMLElement | null>(null);
+    const messageListRef = ref<InstanceType<typeof MessageList> | null>(null);
     const newMessage = ref("");
     const currentView = ref<"list" | "chat">("list");
     const isExpanded = ref(false);
@@ -470,7 +477,6 @@ export default defineComponent({
       intersectionObserver = new IntersectionObserver(
         (entries) => {
           const entry = entries[0];
-          if (!entry) return;
           const now = Date.now();
           if (
             entry.isIntersecting &&

@@ -1,38 +1,61 @@
 <template>
   <div class="relative min-h-[100px] flex flex-col">
     <template v-for="message in allMessages" :key="message.id">
-      <!-- Date Separator -->
-      <message-date
-        v-if="isDateMessage(message)"
-        :date="getDateString(message)"
-      />
-      <!-- Incoming Messages -->
-      <message-in
-        v-else-if="message.sender !== 'visitor'"
-        :name="translate('support')"
-        :time="
-          new Date(message.timestamp).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        "
-        :text="message.text"
-      />
-      <!-- Outgoing Messages -->
-      <message-out
-        v-else
-        :time="
-          new Date(message.timestamp).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        "
-        :text="message.text"
-        :is-successful="message.is_successful"
-        :is-retrying="message.canRetry || false"
-        :message-id="message.id"
-        @retry="onRetry"
-      />
+      <!-- Skip messages that should not be displayed -->
+      <template v-if="!message.metadata?.skip_display">
+        <!-- Date Separator -->
+        <message-date
+          v-if="isDateMessage(message)"
+          :date="getDateString(message)"
+        />
+        <!-- Incoming Messages -->
+        <template v-else-if="message.sender !== 'visitor'">
+          <!-- First message -->
+          <message-in
+            :name="translate('support')"
+            :time="
+              new Date(message.timestamp).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            "
+            :text="message.text"
+            :references="message.metadata?.references || []"
+            :metadata="message.metadata"
+            :is-thinking="isAiThinking"
+          />
+          <!-- Additional message if exists -->
+          <message-in
+            v-if="message.additionalMessage"
+            :name="translate('support')"
+            :time="
+              new Date(message.additionalMessage.timestamp).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            "
+            :text="message.additionalMessage.text"
+            :references="message.additionalMessage.metadata?.references || []"
+            :metadata="message.additionalMessage.metadata"
+            :is-thinking="isAiThinking"
+          />
+        </template>
+        <!-- Outgoing Messages -->
+        <message-out
+          v-else
+          :time="
+            new Date(message.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          "
+          :text="message.text"
+          :is-successful="message.is_successful"
+          :is-retrying="message.canRetry || false"
+          :message-id="message.id"
+          @retry="onRetry"
+        />
+      </template>
     </template>
   </div>
 </template>

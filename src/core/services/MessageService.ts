@@ -40,7 +40,7 @@ class MessageService {
     } catch (error) {
       console.error(
         "MessageService: Error creating visitor+AI messages:",
-        error,
+        error
       );
       console.error("Payload:", payload);
       throw error;
@@ -53,11 +53,11 @@ class MessageService {
   static async getMessagesByConversationId(
     conversationId: number,
     limit: number = 50,
-    offset: number = 0,
+    offset: number = 0
   ): Promise<MessageData[]> {
     try {
       const response = await ApiService.get(
-        `/messages/conversation/${conversationId}?limit=${limit}&offset=${offset}`,
+        `/messages/conversation/${conversationId}?limit=${limit}&offset=${offset}`
       );
       return response.data.data || [];
     } catch (error) {
@@ -73,7 +73,7 @@ class MessageService {
     conversationUuid: string,
     limit: number = 50,
     beforeId?: number,
-    beforeTimestamp?: string,
+    beforeTimestamp?: string
   ): Promise<{
     messages: MessageData[];
     hasMore: boolean;
@@ -121,7 +121,7 @@ class MessageService {
    */
   static async updateMessage(
     id: number,
-    request: UpdateMessageRequest,
+    request: UpdateMessageRequest
   ): Promise<MessageData> {
     try {
       const response = await ApiService.put(`/messages/${id}`, request);
@@ -149,11 +149,11 @@ class MessageService {
    */
   static async listMessages(
     limit: number = 50,
-    offset: number = 0,
+    offset: number = 0
   ): Promise<PaginatedMessageResponse> {
     try {
       const response = await ApiService.get(
-        `/messages?limit=${limit}&offset=${offset}`,
+        `/messages?limit=${limit}&offset=${offset}`
       );
       return response.data.data;
     } catch (error) {

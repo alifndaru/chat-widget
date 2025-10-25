@@ -464,14 +464,28 @@
     color: var(--bs-white);
     border-radius: var(--bs-font-size-lg) var(--bs-font-size-lg) 0.25rem var(--bs-font-size-lg);
     text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    max-width: 100% !important;
+    width: fit-content !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
   }
 
   // Incoming message bubble (left side)
   &.in {
-    background-color: var(--bs-gray-100);
+    background-color: var(--bs-gray-200);
     color: var(--bs-gray-900);
     border-radius: var(--bs-font-size-lg) var(--bs-font-size-lg) var(--bs-font-size-lg) 0.25rem;
     border: 1px solid var(--bs-border-color-translucent);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    max-width: 100% !important;
+    width: fit-content !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
   }
 
   // Failed message state
@@ -544,19 +558,37 @@
 .message-bubble {
   :deep(ul) {
     margin: 0.25rem 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   :deep(li) {
     margin-bottom: 0.25rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
+  :deep(p) {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   :deep(strong) {
     font-weight: 700;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 
   :deep(a) {
     color: var(--bs-energy);
     text-decoration: underline;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
   }
 }
 
@@ -655,13 +687,15 @@
 
   .message-bubble {
     &.incoming {
-      background-color: var(--bs-gray-100, #f26c11);
+      background-color: var(--bs-gray-200, #f26c11);
       color: var(--bs-white);
       padding: 0.75rem 1rem;
       border-radius: var(--bs-font-size-lg) var(--bs-font-size-lg) var(--bs-font-size-lg) 0.25rem;
       font-size: 0.95rem;
       line-height: 1.4;
       word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
       border: 1px solid var(--bs-border-color-translucent);
     }
   }
@@ -706,9 +740,14 @@
       font-size: 0.95rem;
       line-height: 1.4;
       word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
       display: inline-block;
       text-align: left;
       border: none !important;
+      max-width: 100% !important;
+      width: fit-content !important;
+      flex-shrink: 0 !important;
     }
   }
 

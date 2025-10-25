@@ -11,6 +11,18 @@ export interface ChatMessage {
   message_type?: string;
   is_successful?: boolean;
   canRetry?: boolean; // For failed AI messages that can be retried
+  additionalMessage?: ChatMessage; // For storing additional AI response (e.g., scraped_data_response)
+  metadata?: {
+    ai_source?: string;
+    original_visitor_message?: string;
+    collection_source?: string; // To distinguish between documents and scraped_data sources
+    files?: string[]; // Array of file URLs
+    references?: Array<{
+      filename: string;
+      url: string;
+    }>;
+    [key: string]: any;
+  };
 }
 
 export interface ChatSettings {
